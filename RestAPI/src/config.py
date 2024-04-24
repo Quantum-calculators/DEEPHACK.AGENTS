@@ -4,7 +4,6 @@ import os
 load_dotenv()
 
 
-MONGODB_URL = os.environ.get("MONGODB_URL")
 MONGODB_PORT = os.environ.get("MONGODB_PORT")
 MONGODB_HOST = os.environ.get("MONGODB_HOST")
 MONGODB_USER = os.environ.get("MONGODB_USER")

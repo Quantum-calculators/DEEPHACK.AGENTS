@@ -14,16 +14,23 @@ from config import (
     MONGODB_USER,
 )
 
-
-MongoUrl = f"mongodb://{MONGODB_USER}:{MONGODB_PASSWORD}@{MONGODB_HOST}:{MONGODB_PORT}"
+if MONGODB_USER:
+    MongoUrl = (
+        f"mongodb://{MONGODB_USER}:{MONGODB_PASSWORD}@{MONGODB_HOST}:{MONGODB_PORT}"
+    )
+else:
+    MongoUrl = f"mongodb://{MONGODB_HOST}:{MONGODB_PORT}"
 
 client = {}
 
 
 @asynccontextmanager
 async def dbInit(app: FastAPI):
+    print(MongoUrl)
     client["client"] = AsyncIOMotorClient(MongoUrl)
-    client["MessageDB"] = client["client"].get_database(MESSAGE_DB).get_collection(MESSAGE_COLL)
+    client["MessageDB"] = (
+        client["client"].get_database(MESSAGE_DB).get_collection(MESSAGE_COLL)
+    )
     client["UserDB"] = client["client"].get_database(USER_DB).get_collection(USER_COLL)
     yield
     client["client"].close()
