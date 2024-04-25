@@ -3,34 +3,34 @@ from datetime import datetime
 
 
 class RequestStatHypothesis(BaseModel):
-    UUID: str | None
-    userData: str 
+    UUID: str
+    userData: str
     error: str
 
 
 class Style(BaseModel):
-    Color: str | None
-    plotSize: int | None
+    Color: str | None = "blue"
+    plotSize: int | None = 10
 
 
 class PlotData(BaseModel):
-    X: list[float] | None
-    Y: list[float] | None
-    Z: list[float] | None
+    X: list[float] | None = []
+    Y: list[float] | None = []
+    Z: list[float] | None = []
     style: Style
 
 
 class ResponseStatHypothesis(BaseModel):
     UUID: str
-    gigachainData: str | None
-    plotType: str | None
-    plotData: PlotData | None
+    gigachainData: str | None = None
+    plotType: str | None = None
+    plotData: PlotData | None = None
     error: str
 
 
 class Message(BaseModel):
     text: str
-    plotType: str | None
+    plotType: str | None = None
     plotData: PlotData
 
 
