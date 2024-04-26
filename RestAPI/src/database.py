@@ -9,17 +9,10 @@ from config import (
     MESSAGE_COLL,
     MESSAGE_DB,
     MONGODB_HOST,
-    MONGODB_PASSWORD,
     MONGODB_PORT,
-    MONGODB_USER,
 )
 
-if MONGODB_USER:
-    MongoUrl = (
-        f"mongodb://{MONGODB_USER}:{MONGODB_PASSWORD}@{MONGODB_HOST}:{MONGODB_PORT}"
-    )
-else:
-    MongoUrl = f"mongodb://{MONGODB_HOST}:{MONGODB_PORT}"
+MongoUrl = f"mongodb://{MONGODB_HOST}:{MONGODB_PORT}"
 
 client = {}
 
