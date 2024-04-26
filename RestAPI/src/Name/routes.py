@@ -172,17 +172,13 @@ async def statHypothesis(
             "gigaChatData"
         ]  # Если получиться сделать формат ответа JSON, то можно просто никак не форматируя отправлять его на фронт
         resp.plotType = ""
-        if data["X"]:
-            resp.plotData = PlotData(
-                X=data["X"],
-                Y=data["Y"],
-                Z=data["Z"],
-                style=Style(Color=data["color"], plotSize=data["plotSize"]),
-            )
-        else:
-            print(resp.UUID, data)
-            resp.error = "Не удалось обработать запрос"
-            return resp
+        resp.plotData = PlotData(
+            X=data["X"],
+            Y=data["Y"],
+            Z=data["Z"],
+            style=Style(Color=data["color"], plotSize=data["plotSize"]),
+        )
+
         resp.error = ""
         MessageDB.insert_one(
             {
