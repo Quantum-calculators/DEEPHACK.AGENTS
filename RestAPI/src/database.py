@@ -1,4 +1,3 @@
-from typing import AsyncGenerator
 from motor.motor_asyncio import AsyncIOMotorClient
 from fastapi import FastAPI
 from fastapi.concurrency import asynccontextmanager

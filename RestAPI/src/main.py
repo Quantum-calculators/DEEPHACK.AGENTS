@@ -1,10 +1,10 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import dbInit
 from Name.routes import route as NameRoute
+from config import TOKEN_RESTAPI
 
-
-TOKEN = "token"
+TOKEN = TOKEN_RESTAPI
 client = None
 
 
