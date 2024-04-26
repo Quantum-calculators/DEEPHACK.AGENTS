@@ -4,16 +4,16 @@
 
 Для развертывания используется Docker. Необходимо позаботиться о его установке.
 Есть 2 способа развернуть приложение:
-1. С помощью startapp.sh:
- 1.1. `chmod u+x startapp.sh`
- 1.2. `./startapp.sh`
-2. Выполнить напрямую команды Docker:
- 2.1. `docker network create my-network`
- 2.2. `docker container run -d --name mongodb -p 27017:27017 --network my-network mongo:6.0`
- 2.3. `docker build RestAPI/. -t restapi:0.1.0`
- 2.4. `docker container run --name fastapi-app2 -d -p 8000:8000  --network my-network restapi:0.1.0`
- 2.5. `docker build frontend/. -t front_deephack:1.0`
- 2.6. `docker container run -d -p 3000:3000 front_deephack:1.0`
+1. С помощью startapp.sh: \
+ 1.1. `chmod u+x startapp.sh` \
+ 1.2. `./startapp.sh` \
+2. Выполнить напрямую команды Docker: \
+ 2.1. `docker network create my-network` \
+ 2.2. `docker container run -d --name mongodb -p 27017:27017 --network my-network mongo:6.0` \
+ 2.3. `docker build RestAPI/. -t restapi:0.1.0` \
+ 2.4. `docker container run --name fastapi-app2 -d -p 8000:8000  --network my-network restapi:0.1.0` \
+ 2.5. `docker build frontend/. -t front_deephack:1.0` \
+ 2.6. `docker container run -d -p 3000:3000 front_deephack:1.0` \
 
 В случае успешного выполнения команд при вызове команды `docker ps` вы увидите следующий вывод:
 ```
