@@ -1,0 +1,151 @@
+div.main-cell {
+  padding: 20px;
+  height: 100%;
+}
+
+div.description {
+  width: 100%;
+  height: 120px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 100%;
+  align-items: center;
+}
+
+div.title {
+  text-align: center;
+  font-size: 48px;
+  width: 600px;
+  grid-column-start: 2;
+  grid-column-end: 2;
+
+}
+
+div.faq-link {
+  position: absolute;
+  right: 80px;
+  width: 300px;
+  height: 80px;
+  background-color: #D9D9D9;
+  text-align: center;
+  border-radius: 40px;
+  font-size: 64px;
+  grid-column-start: 3;
+  grid-column-end: 3;
+  
+}
+
+a:link, a:active, a:hover, a:visited { 
+  color: #FFFFFF;
+  text-decoration: none; 
+} 
+
+div.chat {
+  display: grid;
+  grid-template-columns: 1fr 8fr 1fr;
+  padding-top: 40px;
+  width: 100%;
+  grid-template-rows: 100%;
+  align-items: center;
+  height: 100%;
+}
+
+div.area-outside {
+  grid-column-start: 2;
+  grid-column-end: 2;
+  width: 100%;
+  height: 65vh;
+  border-radius: 20px;
+  background-color: #FFFFFF;
+  box-shadow: 0 0 0 20px #D9D9D9;
+}
+
+div.area-inside {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-rows: 92% auto;
+  grid-template-columns: 100%;
+}
+
+div.messeges-area {
+  width: 100%;
+  height: 100%;
+  grid-row-start: 1;
+  grid-row-end: 1;
+  background-color: red;
+  border-radius: 20px;
+}
+
+div.input-area {
+  position: relative;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  grid-row-start: 2;
+  grid-row-end: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+div.massage-row {
+  height: auto;
+  background-color: rgba(107, 208, 181, 0.515);
+  margin-top: 10px;
+  margin-bottom: 10px;
+  font-size: 24px;
+}
+
+div.message-box-container-bot {
+  max-width: 65%;
+  background-color: #4667DD;
+  border-radius: 40px;
+  padding: 20px;
+  margin-left: 10px;
+  margin-right: 10px;
+  color: #FFFFFF;
+  clear:both;
+}
+
+div.message-box-container-user {
+  max-width: 65%;
+  background-color: #DBDBDB;
+  border-radius: 40px;
+  padding: 20px;
+  margin-left: 10px;
+  margin-right: 10px;
+  color: #4667DD;
+  float: right;
+  clear:both;
+}
+
+input {
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  border: 2px solid black;
+  box-sizing: border-box;
+  font-size: 24px;
+  padding-left: 20px;
+  padding-right: 7%;
+}
+
+button.send-message {
+  background-color: #4667DD;
+  color: #FFFFFF;
+  border-radius: 15px;
+  border: 0px;
+  height: 80%;
+  width: 6%;
+  position: absolute;
+  right: 0;
+  top: 1;
+  font-size: 34px;
+  margin-right: 8px;
+  text-align: center;
+  padding: 0px;
+  display: flex;
+  justify-content: center;
+}
