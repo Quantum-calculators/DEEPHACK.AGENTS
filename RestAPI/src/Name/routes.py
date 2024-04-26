@@ -18,10 +18,9 @@ import json
 import numpy as np
 
 from database import client
+from config import AUTH_DATA
 
 route = APIRouter(prefix="/Name", tags=["Name"])
-
-auth_data = "Yjg4MTQzMmUtNDAwMS00NDk0LThjOGUtNmU5ZWQ2YzQ4NDQ2OmQ4MWMxZGZiLTFmNGYtNDk5NS05OGQzLTBiMzYyYWJmNjk3OA=="
 
 
 @route.get(
@@ -313,7 +312,7 @@ async def authGigaChat(userUUID: str) -> tuple[str, str]:
             "Content-Type": "application/x-www-form-urlencoded",
             "Accept": "application/json",
             "RqUID": str(userUUID),
-            "Authorization": f"Basic {auth_data}",
+            "Authorization": f"Basic {AUTH_DATA}",
         }
         userData = await session.post(url=url, headers=headers, data=payload, ssl=False)
         if userData.status != 200:
