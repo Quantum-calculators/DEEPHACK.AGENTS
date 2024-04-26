@@ -69,7 +69,6 @@ async def addUser():
 async def statHypothesis(
     request: RequestStatHypothesis,
 ):
-    # Client = client["client"]
     MessageDB = client["MessageDB"]
     UserDB = client["UserDB"]
     resp = ResponseStatHypothesis(UUID="", error="")
@@ -126,7 +125,7 @@ async def statHypothesis(
         )
         resp.gigachainData = data[
             "gigaChatData"
-        ]  # Если получиться сделать формат ответа JSON, то можно просто никак не форматируя отправлять его на фронт
+        ] 
         resp.plotType = data["plotType"]
         if data["X"]:
             resp.plotData = PlotData(
@@ -169,7 +168,7 @@ async def statHypothesis(
         )
         resp.gigachainData = data[
             "gigaChatData"
-        ]  # Если получиться сделать формат ответа JSON, то можно просто никак не форматируя отправлять его на фронт
+        ] 
         resp.plotType = ""
         resp.plotData = PlotData(
             X=data["X"],
@@ -215,11 +214,11 @@ async def getGigachainTextData(jsonUserData: dict, userMessage: str) -> tuple[st
                     {"role": "system", "content": f"{prompt}"},
                     {"role": "user", "content": f"{userMessage}"},
                 ],
-                "temperature": 1,  # пока без понятия что это значит. Потом разберемся
+                "temperature": 1, 
                 "stream": False,
                 "max_tokens": 1024,
                 "repetition_penalty": 1,
-                "update_interval": 0,  # можно получать потоково сообщения, а не все разом. Чтобы не пергружать приложение
+                "update_interval": 0,
             }
         )
         headers = {
@@ -257,11 +256,11 @@ async def getGigachainPlotData(jsonUserData: dict, userMessage: str) -> tuple[st
                     {"role": "system", "content": f"{prompt}"},
                     {"role": "user", "content": f"{userMessage}"},
                 ],
-                "temperature": 1,  # пока без понятия что это значит. Потом разберемся
+                "temperature": 1, 
                 "stream": False,
                 "max_tokens": 1024,
                 "repetition_penalty": 1,
-                "update_interval": 0,  # можно получать потоково сообщения, а не все разом. Чтобы не пергружать приложение
+                "update_interval": 0,
             }
         )
         headers = {
@@ -275,9 +274,7 @@ async def getGigachainPlotData(jsonUserData: dict, userMessage: str) -> tuple[st
         byteResp = await modelResponse.content.read()
         jsonResp = byteResp.decode("utf8").replace("'", '"')
         data = json.loads(jsonResp)
-        # время убогого, но работающего кода
         x = np.arange(0.1, 10, 0.1)
-        # время время истекло
         y = []
         print(data["choices"][0]["message"]["content"])
         code = f"""
