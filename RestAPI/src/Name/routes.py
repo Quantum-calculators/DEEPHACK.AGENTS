@@ -10,9 +10,12 @@ from Name.schemas import (
 from fastapi.responses import JSONResponse, HTMLResponse, RedirectResponse
 import aiohttp
 from datetime import datetime
+import time
 
 import uuid
+import math
 import json
+import numpy as np
 
 from database import client
 
@@ -38,7 +41,7 @@ async def message(UUID: str | None = None):
     return {"result": []}
 
 
-@route.post(
+@route.get(
     "/add_user",
     status_code=status.HTTP_201_CREATED,
 )
@@ -100,11 +103,11 @@ async def statHypothesis(
         }
     )
     userData = await UserDB.find_one({"UUID": request.UUID})
-    access_token = userData["token"]
+    access_token = userData["access_token"]
     expires_at = userData["expires_at"]
 
     # проверка не истек ли токен
-    if datetime.fromtimestamp(expires_at) < datetime.now():
+    if expires_at < time.time():
         try:
             access_token, expires_at = await authGigaChat(userUUID=resp.UUID)
             UserDB.update_one(
@@ -115,12 +118,15 @@ async def statHypothesis(
             print(resp.UUID, e)
             resp.error = str(e)
             return resp
-
+        
     # делаем запрос к gigachain для расчета статистики.
     try:
-        data = await getGigachainDataMock(request.userData)
+        data = await getGigachainData(
+            jsonUserData={"access_token": access_token, "expires_at": expires_at},
+            userMessage=request.userData,
+        )
         resp.gigachainData = data[
-            "gigachainData"
+            "gigaChatData"
         ]  # Если получиться сделать формат ответа JSON, то можно просто никак не форматируя отправлять его на фронт
         resp.plotType = data["plotType"]
         resp.plotData = PlotData(
@@ -158,21 +164,83 @@ async def statHypothesis(
         return resp
 
 
-# TODO: реализовать выполнение запроса
-async def getGigachainDataMock(userMessage: str) -> dict[str]:
-    return {
-        "gigachainData": "Для проверки гипотезы о равенстве средних значений двух \
-выборок можно воспользоваться t-тестом для независимых выборок. В данном \
-случае, нулевая гипотеза будет состоять в том, что средние значения \
-для обеих выборок равны. Давайте проведем данное тестирование. Сначала, \
-давайте посчитаем средние значения для каждой выборки. Для выборок:",
-        "plotType": "Norm",
-        "X": [1.2],
-        "Y": [0.2],
-        "Z": [],
-        "color": "blue",
-        "plotSize": 10,
-    }
+# # TODO: реализовать выполнение запроса
+# async def getGigachainDataMock(userMessage: str) -> dict[str]:
+#     return {
+#         "gigachainData": "Для проверки гипотезы о равенстве средних значений двух \
+# выборок можно воспользоваться t-тестом для независимых выборок. В данном \
+# случае, нулевая гипотеза будет состоять в том, что средние значения \
+# для обеих выборок равны. Давайте проведем данное тестирование. Сначала, \
+# давайте посчитаем средние значения для каждой выборки. Для выборок:",
+#         "plotType": "Norm",
+#         "X": [1.2],
+#         "Y": [0.2],
+#         "Z": [],
+#         "color": "blue",
+#         "plotSize": 10,
+#     }
+
+
+async def getGigachainData(jsonUserData: dict, userMessage: str) -> tuple[str, str]:
+    url1 = "https://ngw.devices.sberbank.ru:9443/api/v2/oauth"
+    payload1 = "scope=GIGACHAT_API_CORP"
+    async with aiohttp.ClientSession() as session:
+        prompt = """Ты - профессианальный программист python. Пользователи тебе передают функцию. А ты дожен вывести эту же функцию, только на коде python. НЕ ВЫВОДИ НИКАКОЙ ТЕКСТ КРОМЕ ФУНКЦИИ PYTHON ДЛЯ РАСЧЕТА ЗНАЧЕНИЯ Y.  Имя функции задавай func. Входные параметры - ТОЛЬКО x.  
+        Пример1: 2y= 5x+10 -> def func(x): return 5/2 * x + 10/2
+        Пример2: 4y = exp^(2x - 1) -> def func(x): return math.exp(2 * x - 1) / 4"""
+        url = "https://gigachat.devices.sberbank.ru/api/v1/chat/completions"
+        payload = json.dumps(
+            {
+                "model": "GigaChat",
+                "messages": [
+                    {"role": "system", "content": f"{prompt}"},
+                    {"role": "user", "content": f"{userMessage}"},
+                ],
+                "temperature": 1,  # пока без понятия что это значит. Потом разберемся
+                "stream": False,
+                "max_tokens": 1024,
+                "repetition_penalty": 1,
+                "update_interval": 0,  # можно получать потоково сообщения, а не все разом. Чтобы не пергружать приложение
+            }
+        )
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": f'Bearer {jsonUserData["access_token"]}',
+        }
+        modelResponse = await session.post(
+            url=url, headers=headers, data=payload, ssl=False
+        )
+        byteResp = await modelResponse.content.read()
+        jsonResp = byteResp.decode("utf8").replace("'", '"')
+        data = json.loads(jsonResp)
+        # время убогого, но работающего кода
+        x = np.arange(0.1, 10, 0.1)
+        # время время истекло
+        y = []
+        print(data["choices"][0]["message"]["content"])
+        code = f"""
+{data["choices"][0]["message"]["content"]}
+
+for i in x:
+    try:
+        elem= func(i)
+        y.append(elem)
+    except Exception as e:
+        print(e)
+        raise Exception("Не могу разобрать функцию")
+
+        """
+        exec(code)
+        return {
+            "gigaChatData": "",
+            "plotType": "linear_plot", 
+            "X": x.tolist(),
+            "Y": y,
+            "Z": [],
+            "color": "blue",
+            "plotSize": 10,
+        }
 
 
 async def authGigaChat(userUUID: str) -> tuple[str, str]:

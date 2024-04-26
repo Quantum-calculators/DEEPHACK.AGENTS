@@ -5,7 +5,7 @@ from datetime import datetime
 class RequestStatHypothesis(BaseModel):
     UUID: str
     userData: str
-    error: str
+    error: str | None = None
 
 
 class Style(BaseModel):
