@@ -118,10 +118,10 @@ async def statHypothesis(
             print(resp.UUID, e)
             resp.error = str(e)
             return resp
-        
+
     # делаем запрос к gigachain для расчета статистики.
     try:
-        data = await getGigachainData(
+        data = await getGigachainPlotData(
             jsonUserData={"access_token": access_token, "expires_at": expires_at},
             userMessage=request.userData,
         )
@@ -129,12 +129,17 @@ async def statHypothesis(
             "gigaChatData"
         ]  # Если получиться сделать формат ответа JSON, то можно просто никак не форматируя отправлять его на фронт
         resp.plotType = data["plotType"]
-        resp.plotData = PlotData(
-            X=data["X"],
-            Y=data["Y"],
-            Z=data["Z"],
-            style=Style(Color=data["color"], plotSize=data["plotSize"]),
-        )
+        if data["X"]:
+            resp.plotData = PlotData(
+                X=data["X"],
+                Y=data["Y"],
+                Z=data["Z"],
+                style=Style(Color=data["color"], plotSize=data["plotSize"]),
+            )
+        else:
+            print(resp.UUID, data)
+            resp.error = "Не удалось обработать запрос"
+            return resp
         resp.error = ""
         MessageDB.insert_one(
             {
@@ -159,31 +164,88 @@ async def statHypothesis(
         )
         return resp
     except Exception as e:
+        data = await getGigachainTextData(
+            jsonUserData={"access_token": access_token, "expires_at": expires_at},
+            userMessage=request.userData,
+        )
+        resp.gigachainData = data[
+            "gigaChatData"
+        ]  # Если получиться сделать формат ответа JSON, то можно просто никак не форматируя отправлять его на фронт
+        resp.plotType = ""
+        resp.plotData = PlotData(
+            X=data["X"],
+            Y=data["Y"],
+            Z=data["Z"],
+            style=Style(Color=data["color"], plotSize=data["plotSize"]),
+        )
+
+        resp.error = ""
+        MessageDB.insert_one(
+            {
+                "user": False,
+                "UUID": resp.UUID,
+                "date": datetime.now(),
+                "Message": {
+                    "text": resp.gigachainData,
+                    "PlotType": resp.plotType,
+                    "PlotData": {
+                        "X": resp.plotData.X,
+                        "Y": resp.plotData.Y,
+                        "Z": resp.plotData.Z,
+                        "Styles": {
+                            "Color": resp.plotData.style.Color,
+                            "PlotSize": resp.plotData.style.plotSize,
+                        },
+                    },
+                },
+                "Error": resp.error,
+            }
+        )
         print(resp.UUID, e)
-        resp.error = "Не удалось обработать запрос"
         return resp
 
 
-# # TODO: реализовать выполнение запроса
-# async def getGigachainDataMock(userMessage: str) -> dict[str]:
-#     return {
-#         "gigachainData": "Для проверки гипотезы о равенстве средних значений двух \
-# выборок можно воспользоваться t-тестом для независимых выборок. В данном \
-# случае, нулевая гипотеза будет состоять в том, что средние значения \
-# для обеих выборок равны. Давайте проведем данное тестирование. Сначала, \
-# давайте посчитаем средние значения для каждой выборки. Для выборок:",
-#         "plotType": "Norm",
-#         "X": [1.2],
-#         "Y": [0.2],
-#         "Z": [],
-#         "color": "blue",
-#         "plotSize": 10,
-#     }
+async def getGigachainTextData(jsonUserData: dict, userMessage: str) -> tuple[str, str]:
+    async with aiohttp.ClientSession() as session:
+        prompt = "Ты - профессианальный аналитик в крупной IT компанни."
+        url = "https://gigachat.devices.sberbank.ru/api/v1/chat/completions"
+        payload = json.dumps(
+            {
+                "model": "GigaChat",
+                "messages": [
+                    {"role": "system", "content": f"{prompt}"},
+                    {"role": "user", "content": f"{userMessage}"},
+                ],
+                "temperature": 1,  # пока без понятия что это значит. Потом разберемся
+                "stream": False,
+                "max_tokens": 1024,
+                "repetition_penalty": 1,
+                "update_interval": 0,  # можно получать потоково сообщения, а не все разом. Чтобы не пергружать приложение
+            }
+        )
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": f'Bearer {jsonUserData["access_token"]}',
+        }
+        modelResponse = await session.post(
+            url=url, headers=headers, data=payload, ssl=False
+        )
+        byteResp = await modelResponse.content.read()
+        jsonResp = byteResp.decode("utf8").replace("'", '"')
+        data = json.loads(jsonResp)
+        return {
+            "gigaChatData": data["choices"][0]["message"]["content"],
+            "plotType": "",
+            "X": [],
+            "Y": [],
+            "Z": [],
+            "color": "blue",
+            "plotSize": 10,
+        }
 
 
-async def getGigachainData(jsonUserData: dict, userMessage: str) -> tuple[str, str]:
-    url1 = "https://ngw.devices.sberbank.ru:9443/api/v2/oauth"
-    payload1 = "scope=GIGACHAT_API_CORP"
+async def getGigachainPlotData(jsonUserData: dict, userMessage: str) -> tuple[str, str]:
     async with aiohttp.ClientSession() as session:
         prompt = """Ты - профессианальный программист python. Пользователи тебе передают функцию. А ты дожен вывести эту же функцию, только на коде python. НЕ ВЫВОДИ НИКАКОЙ ТЕКСТ КРОМЕ ФУНКЦИИ PYTHON ДЛЯ РАСЧЕТА ЗНАЧЕНИЯ Y.  Имя функции задавай func. Входные параметры - ТОЛЬКО x.  
         Пример1: 2y= 5x+10 -> def func(x): return 5/2 * x + 10/2
@@ -234,7 +296,7 @@ for i in x:
         exec(code)
         return {
             "gigaChatData": "",
-            "plotType": "linear_plot", 
+            "plotType": "linear_plot",
             "X": x.tolist(),
             "Y": y,
             "Z": [],
