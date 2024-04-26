@@ -1,0 +1,7 @@
+MONGODB_PORT=27017
+MONGODB_HOST=mongodb
+MESSAGE_DB=Messages1
+MESSAGE_COLL=element
+USER_DB=Users1
+USER_COLL=element
+AUTH_DATA=данные авторизации
